@@ -44,15 +44,21 @@ function lever_fetch_jobs(string $account): array {
 	return $data;
 }
 
-$jobs = lever_fetch_jobs($account);
+$jobs = array_map(function ($job) {
+	$title = $job['text'] ?? '';
 
-if ( ! empty( $_GET['id'] ) ) {
+	$job['slug'] = sanitize_title($title);
 
-    $job_id = sanitize_text_field( wp_unslash( $_GET['id'] ) );
+	return $job;
+}, lever_fetch_jobs($account));
+
+if ( ! empty( $_GET['slug'] ) ) {
+
+    $job_slug = sanitize_text_field( wp_unslash( $_GET['slug'] ) );
 
     $job = null;
     foreach ( $jobs as $item ) {
-        if ( isset( $item['id'] ) && $item['id'] === $job_id ) {
+        if ( isset( $item['slug'] ) && $item['slug'] === $job_slug ) {
             $job = $item;
             break;
         }
@@ -144,8 +150,6 @@ if ( ! empty( $_GET['id'] ) ) {
                     const allJobs = Array.isArray(cfg.jobs) ? cfg.jobs : [];
                     const perPage = Number(cfg.perPage || 6);
 
-                    console.log(allJobs)
-
                     const $status = document.getElementById('jobsStatus');
                     const $grid = document.getElementById('jobsGrid');
                     const $pagination = document.getElementById('jobsPagination');
@@ -196,6 +200,15 @@ if ( ! empty( $_GET['id'] ) ) {
 
                         const url = new URL(window.location.href);
                         url.searchParams.set('id', job.id);
+
+                        return normalize(url.toString());
+                    }
+
+                    function jobSlugUrl(job) {
+                        if (!job?.slug) return '';
+
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('slug', job.slug);
 
                         return normalize(url.toString());
                     }
@@ -291,7 +304,7 @@ if ( ! empty( $_GET['id'] ) ) {
 
                             const aTitle = document.createElement('a');
                             aTitle.className = 'job-link';
-                            aTitle.href = jobInternalUrl(job) || '#';
+                            aTitle.href = jobSlugUrl(job) || '#';
                             aTitle.textContent = jobTitle(job) || 'Job';
 
                             h3.appendChild(aTitle);
@@ -315,7 +328,7 @@ if ( ! empty( $_GET['id'] ) ) {
 
                             const cta = document.createElement('a');
                             cta.className = 'job-cta elementor-button';
-                            cta.href = jobInternalUrl(job) || '#';
+                            cta.href = jobSlugUrl(job) || '#';
                             cta.textContent = 'View Now';
 
                             actions.appendChild(cta);
