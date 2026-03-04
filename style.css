@@ -121,6 +121,9 @@
     background-color: #C88284 !important;
     color: white !important;
 }
+.post-type-archive-job .site-content {
+    display: block;
+}
 @media (max-width: 1024px){
     .jobs-grid{
         grid-template-columns: repeat(2, 1fr);
